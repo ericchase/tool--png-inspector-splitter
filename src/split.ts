@@ -58,6 +58,8 @@ if (IHDR) {
       const compressed_data = compressIDAT(U8Concat(scanlines.slice(i * size, i * size + size)));
       if (compressed_data) {
         const newIDAT = createIDAT(compressed_data);
+
+        // TODO: create new IHDR chunk for the new IDAT chunk
         await Bun.write(path + '__split' + i + '.png', U8Concat([signatureBytes, ...chunkTop.map((_) => _.bytes), newIDAT, ...chunkBot.map((_) => _.bytes)]));
       }
     }
