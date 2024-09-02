@@ -1,7 +1,8 @@
-import { ArrayEquals, ArraySplit, U8SConcat, U8SSplit, U8STake, U8SToASCII, U8SToHex } from './lib/array.js';
-import { Chunk, compressIDATdata, createIDATchunk, createIHDRchunk, decompressIDATdata, extractChunks, getScanlineSize, parseIHDRChunk } from './lib/png.js';
+import { ArraySplit, U8SConcat, U8SSplit, U8STake, U8SToASCII, U8SToHex } from './lib/array.js';
+import { Chunk, compressImageData, createIDATchunk, createIHDRchunk, decompressImageData, extractChunks, getScanlineSize, parseIHDRChunk } from './lib/png.js';
 
-const [, , path] = Bun.argv;
+const path = Bun.argv[2];
+const max_height_per_file = Bun.argv[3] === undefined ? 4096 : Number.parseInt(Bun.argv[3]);
 
 const buffer = await Bun.file(path).bytes();
 
@@ -47,7 +48,7 @@ const compressed_bytes = U8SConcat(dataChunks.map((chunk) => chunk.data));
 console.log('Compressed Data Size:', compressed_bytes.byteLength);
 
 console.log('Decompressing Data');
-const decompressed_bytes = decompressIDATdata(compressed_bytes);
+const decompressed_bytes = decompressImageData(compressed_bytes);
 if (!decompressed_bytes) throw 'error: decompressed_bytes';
 console.log('Decompressed Data Size:', decompressed_bytes.byteLength);
 
@@ -65,8 +66,6 @@ console.log(scanlines.length, 'Scanlines Extracted');
 // const outpath = path + '__split00.png';
 // console.log('Writing', outpath);
 // await Bun.write(outpath, U8Concat([signatureBytes, ...topChunks.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));
-
-let test: Uint8Array[] = [];
 
 // the individual files produced from this loop have issues
 
@@ -133,37 +132,55 @@ function validateScanline(scanline: Uint8Array) {
   return true;
 }
 
+// // Splitting scanlines based on max decompressed data size
+// const scanline_groups: Uint8Array[] = [];
+// let group: Uint8Array[] = [];
+// let groupsize = 0;
+// for (const scanline of scanlines) {
+//   validateScanline(scanline);
+//   if (groupsize + scanline.byteLength < max_height_per_file) {
+//     group.push(scanline);
+//     groupsize += scanline.byteLength;
+//   } else {
+//     scanline_groups.push(U8SConcat(group));
+//     group = [];
+//     groupsize = 0;
+//   }
+// }
+// console.log('Group Count:', scanline_groups.length);
+
+console.log('Validating Scanlines');
 for (const scanline of scanlines) {
   validateScanline(scanline);
 }
 
-console.log('Group Scanlines and Create New PNGs');
-const scanline_group_max_size = 500;
-const scanline_groups = ArraySplit(scanlines, scanline_group_max_size);
+console.log('Creating New PNGs');
+// let test: Uint8Array[] = [];
+const scanline_groups = ArraySplit(scanlines, max_height_per_file);
 for (let index = 0; index < scanline_groups.length; index++) {
-  console.log('Group', index);
+  console.log('PNG', index);
   const group = scanline_groups[index];
   const decompressed_data = U8SConcat(group);
   checkScanlineFilterBytes(decompressed_data, scanlineSize);
-  test.push(decompressed_data);
-  const compressed_data = compressIDATdata(decompressed_data);
+  // test.push(decompressed_data);
+  const compressed_data = compressImageData(decompressed_data);
   if (!compressed_data) throw 'error: compressed_data';
   console.log('compressed length:', compressed_data.byteLength);
   // Create the new IDAT
   const newIDAT = createIDATchunk(compressed_data);
   // Create the new IHDR
-  const newIHDR = createIHDRchunk(width, group.length, bitDepth, colorType, compressionMethod, filterMethod, interlaceMethod);
-  console.log(...U8SToHex(newIHDR));
+  const newIHDR = createIHDRchunk({ width, height: group.length, bitDepth, colorType, compressionMethod, filterMethod, interlaceMethod });
+  console.log('new IHDR:', ...U8SToHex(newIHDR));
   const outpath = path + '__split' + index.toString(10).padStart(2, '0') + '.png';
   console.log('Writing', outpath);
   await Bun.write(outpath, U8SConcat([signatureBytes, newIHDR, ...topChunksWithoutIHDR.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));
 }
 
-// this new single file is perfect
+// // this new single file is perfect
 
-const decompressed_total = U8SConcat(test);
-console.log('Equal:', ArrayEquals(decompressed_total, decompressed_bytes));
-const compressed_total = compressIDATdata(decompressed_total);
-if (!compressed_total) throw 'error: compressed_total';
-const newIDAT = createIDATchunk(compressed_total);
-await Bun.write(path + '__split-test.png', U8SConcat([signatureBytes, IHDR.bytes, ...topChunksWithoutIHDR.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));
+// const decompressed_total = U8SConcat(test);
+// console.log('Equal:', ArrayEquals(decompressed_total, decompressed_bytes));
+// const compressed_total = compressImageData(decompressed_total);
+// if (!compressed_total) throw 'error: compressed_total';
+// const newIDAT = createIDATchunk(compressed_total);
+// await Bun.write(path + '__split-test.png', U8SConcat([signatureBytes, IHDR.bytes, ...topChunksWithoutIHDR.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));

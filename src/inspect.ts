@@ -1,6 +1,6 @@
 import { U8SConcat, U8SFromUint32, U8SSplit, U8STake, U8SToASCII, U8SToHex } from './lib/array.js';
 import { initCRC } from './lib/crc.js';
-import { Chunk, analyzeChunk, decompressIDATdata, extractChunks, getScanlineSize, parseIHDRChunk } from './lib/png.js';
+import { Chunk, analyzeChunk, decompressImageData, extractChunks, getScanlineSize, parseIHDRChunk } from './lib/png.js';
 
 const [, , path] = Bun.argv;
 
@@ -44,10 +44,10 @@ const compressed_bytes = U8SConcat(idat_datas);
 console.log('Compressed Data Size:', compressed_bytes.byteLength);
 
 console.log('Decompressing Data');
-const decompressed_bytes = decompressIDATdata(compressed_bytes);
+const decompressed_bytes = decompressImageData(compressed_bytes);
 if (!decompressed_bytes) throw 'error: decompressed_bytes';
 console.log('Decompressed Data Size:', decompressed_bytes.byteLength);
-console.log('Decompressed Bytes:', decompressed_bytes);
+// console.log('Decompressed Bytes:', decompressed_bytes);
 console.log();
 
 if (!IHDR) throw 'error: IHDR';
