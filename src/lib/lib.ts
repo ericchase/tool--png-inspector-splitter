@@ -93,18 +93,76 @@ export function analyzeChunk(bytes: Uint8Array) {
   return { data, size, type, crc };
 }
 
+export function getChunkCRC(chunk_type: Uint8Array, chunk_data: Uint8Array) {
+  return initCRC(U8Concat([chunk_type, chunk_data]));
+}
+
 export function createIDAT(data: Uint8Array) {
   const size = U8FromInt(data.byteLength);
   const type = stringToBytes('IDAT');
-  const crc = crcToBytes(initCRC(U8Concat([type, data])));
+  const crc = crcToBytes(getChunkCRC(type, data));
   return U8Concat([size, type, data, crc]);
+}
+
+export function createIHDR(width: number, height: number, bitDepth: number, colorType: number) {
+  const ihdrData = new Uint8Array(13);
+
+  // Width (4 bytes)
+  ihdrData[0] = (width >> 24) & 0xff;
+  ihdrData[1] = (width >> 16) & 0xff;
+  ihdrData[2] = (width >> 8) & 0xff;
+  ihdrData[3] = width & 0xff;
+
+  // Height (4 bytes)
+  ihdrData[4] = (height >> 24) & 0xff;
+  ihdrData[5] = (height >> 16) & 0xff;
+  ihdrData[6] = (height >> 8) & 0xff;
+  ihdrData[7] = height & 0xff;
+
+  // Bit Depth (1 byte)
+  ihdrData[8] = bitDepth;
+
+  // Color Type (1 byte)
+  ihdrData[9] = colorType;
+
+  // Compression Method (1 byte)
+  ihdrData[10] = 0; // Standard compression
+
+  // Filter Method (1 byte)
+  ihdrData[11] = 0; // Adaptive filtering
+
+  // Interlace Method (1 byte)
+  ihdrData[12] = 0; // No interlace
+
+  // Create IHDR chunk
+  const ihdrLength = ihdrData.length;
+  const ihdrType = new TextEncoder().encode('IHDR');
+  const ihdrChunk = new Uint8Array(8 + ihdrLength + 4); // Length, Type, Data, CRC
+
+  // Write length of IHDR data (4 bytes)
+  ihdrChunk[0] = (ihdrLength >> 24) & 0xff;
+  ihdrChunk[1] = (ihdrLength >> 16) & 0xff;
+  ihdrChunk[2] = (ihdrLength >> 8) & 0xff;
+  ihdrChunk[3] = ihdrLength & 0xff;
+
+  // Write "IHDR" type
+  ihdrChunk.set(ihdrType, 4);
+
+  // Write IHDR data
+  ihdrChunk.set(ihdrData, 8);
+
+  // Calculate CRC for IHDR chunk (type + data)
+  const crc = getChunkCRC(ihdrType, ihdrData); // Use your CRC calculation function
+  ihdrChunk.set(new Uint8Array([(crc >> 24) & 0xff, (crc >> 16) & 0xff, (crc >> 8) & 0xff, crc & 0xff]), 8 + ihdrLength);
+
+  return ihdrChunk;
 }
 
 export function toHex(bytes: Uint8Array) {
   return Array.from(bytes).map((byte) => byte.toString(16).padStart(2, '0'));
 }
 
-export function decompressIDAT(data: Uint8Array) {
+export function decompressIDATdata(data: Uint8Array) {
   // Use pako to inflate the compressed data
   try {
     const decompressedData = pako.inflate(data);
@@ -115,7 +173,7 @@ export function decompressIDAT(data: Uint8Array) {
   }
 }
 
-export function compressIDAT(data: Uint8Array) {
+export function compressIDATdata(data: Uint8Array) {
   try {
     // Use pako to deflate (compress) the raw image data
     const compressedData = pako.deflate(data);
@@ -149,22 +207,46 @@ export function stringToBytes(string: string) {
   return encoder.encode(string);
 }
 
-export function getScanlineSize(IHDR: Chunk) {
+export function parseIHDRChunk(IHDR: Chunk) {
   const data = IHDR.data;
 
   if (data.length !== 13) {
-    throw new Error('Invalid IHDR chunk length.');
+    throw new Error('Invalid IHDR chunk length. Expected 13 bytes.');
   }
 
-  // Extract image width (first 4 bytes)
-  const imageWidth = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
+  // Extract width (4 bytes)
+  const width = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
 
-  // Extract bit depth (byte 8)
+  // Extract height (4 bytes)
+  const height = (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
+
+  // Extract bit depth (1 byte)
   const bitDepth = data[8];
 
-  // Extract color type (byte 9)
+  // Extract color type (1 byte)
   const colorType = data[9];
 
+  // Extract compression method (1 byte)
+  const compressionMethod = data[10];
+
+  // Extract filter method (1 byte)
+  const filterMethod = data[11];
+
+  // Extract interlace method (1 byte)
+  const interlaceMethod = data[12];
+
+  return {
+    bitDepth,
+    colorType,
+    compressionMethod,
+    filterMethod,
+    height,
+    interlaceMethod,
+    width,
+  };
+}
+
+export function getScanlineSize({ width, bitDepth, colorType }: { width: number; bitDepth: number; colorType: number }) {
   // Calculate bytes per pixel based on color type and bit depth
   let samplesPerPixel: number;
   switch (colorType) {
@@ -189,7 +271,7 @@ export function getScanlineSize(IHDR: Chunk) {
 
   // Calculate bytes per pixel
   const bytesPerPixel = (bitDepth * samplesPerPixel) / 8;
-  const scanlineSize = 1 + imageWidth * bytesPerPixel;
+  const scanlineSize = 1 + width * bytesPerPixel;
 
-  return { imageWidth, bytesPerPixel, scanlineSize };
+  return scanlineSize;
 }
