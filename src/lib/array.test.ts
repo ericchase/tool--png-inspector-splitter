@@ -23,6 +23,9 @@ describe(ArrayEquals.name, () => {
       expect(ArrayEquals(input, input)).toBe(true);
     });
   }
+  test('Unequal Arrays Fail', () => {
+    expect(ArrayEquals([1], [1, 2])).toBe(false);
+  });
 });
 
 describe(ArraySplit.name, () => {
