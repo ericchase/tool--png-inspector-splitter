@@ -21,17 +21,10 @@ export function updateCRC(crc: number, bytes: Uint8Array) {
   for (let n = 0; n < bytes.length; n++) {
     c = crc_table[(c ^ bytes[n]) & 0xff] ^ (c >>> 8);
   }
-  return c;
+  return c >>> 0;
 }
 
 /* Return the CRC of the bytes buf[0..len-1]. */
 export function initCRC(bytes: Uint8Array) {
-  return updateCRC(0xffffffff >>> 0, bytes) ^ (0xffffffff >>> 0);
-}
-
-export function crcToBytes(crc: number) {
-  const bytes = new Uint8Array(4);
-  const view = new DataView(bytes.buffer);
-  view.setUint32(0, crc, false); // false for big-endian
-  return bytes;
+  return (updateCRC(0xffffffff >>> 0, bytes) ^ (0xffffffff >>> 0)) >>> 0;
 }
