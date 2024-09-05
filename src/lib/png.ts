@@ -1,6 +1,7 @@
 import pako from 'pako';
-import { U8SConcat, U8SFromString, U8SFromUint32, U8STake, Uint32ToHex } from './array.js';
-import { initCRC } from './crc.js';
+import { Uint32ToHex } from './ericchase/Algorithm/Array/Uint32Array.js';
+import { U8Concat, U8FromString, U8FromUint32, U8Take } from './ericchase/Algorithm/Array/Uint8Array.js';
+import { CRC } from './ericchase/Algorithm/Math/CRC.js';
 
 export class Chunk {
   readonly crc: Uint8Array;
@@ -19,8 +20,8 @@ export class Chunk {
 export function analyzeChunk(bytes: Uint8Array) {
   const size = new DataView(bytes.buffer).getInt32(0);
   const type = bytes.slice(4, 8);
-  const [_, rest] = U8STake(bytes, 8);
-  const [data, crc] = U8STake(rest, size);
+  const [_, rest] = U8Take(bytes, 8);
+  const [data, crc] = U8Take(rest, size);
   return { data, size, type, crc };
 }
 
@@ -34,10 +35,10 @@ export function compressImageData(data: Uint8Array) {
 }
 
 export function createIDATchunk(data: Uint8Array) {
-  const size = U8SFromUint32(data.byteLength);
-  const type = U8SFromString('IDAT');
-  const crc = U8SFromUint32(getChunkCRC(type, data));
-  return U8SConcat([size, type, data, crc]);
+  const size = U8FromUint32(data.byteLength);
+  const type = U8FromString('IDAT');
+  const crc = U8FromUint32(getChunkCRC(type, data));
+  return U8Concat([size, type, data, crc]);
 }
 
 export function createIHDRchunk({ width, height, bitDepth, colorType, compressionMethod = 0, filterMethod = 0, interlaceMethod = 0 }: { width: number; height: number; bitDepth: number; colorType: number; compressionMethod?: number; filterMethod?: number; interlaceMethod?: number }) {
@@ -123,7 +124,7 @@ export function decompressImageData(data: Uint8Array) {
 
 export function extractChunk(bytes: Uint8Array) {
   const size = new DataView(bytes.buffer).getInt32(0);
-  return U8STake(bytes, 8 + size + 4); // size,type,data,crc
+  return U8Take(bytes, 8 + size + 4); // size,type,data,crc
 }
 
 export function extractChunks(bytes: Uint8Array) {
@@ -137,11 +138,11 @@ export function extractChunks(bytes: Uint8Array) {
 }
 
 export function getChunkCRC(type_bytes: Uint8Array, data_bytes: Uint8Array) {
-  return initCRC(U8SConcat([type_bytes, data_bytes]));
+  return CRC.Init(U8Concat([type_bytes, data_bytes]));
 }
 
 export function getChunkCRCHex(type_bytes: Uint8Array, data_bytes: Uint8Array) {
-  return Uint32ToHex(initCRC(U8SConcat([type_bytes, data_bytes])));
+  return Uint32ToHex(CRC.Init(U8Concat([type_bytes, data_bytes])));
 }
 
 export function getScanlineSize({ width, bitDepth, colorType }: { width: number; bitDepth: number; colorType: number }) {

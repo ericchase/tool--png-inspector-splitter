@@ -1,16 +1,16 @@
-import { U8SConcat, U8SFromUint32, U8SSplit, U8STake, U8SToASCII, U8SToHex } from './array.js';
-import { initCRC } from './crc.js';
+import { U8Concat, U8FromUint32, U8Split, U8Take, U8ToASCII, U8ToHex } from './ericchase/Algorithm/Array/Uint8Array.js';
+import { CRC } from './ericchase/Algorithm/Math/CRC.js';
 import { Chunk, analyzeChunk, decompressImageData, extractChunks, getScanlineSize, parseIHDRChunk } from './png.js';
 
 // const [, , path] = Bun.argv;
 // const buffer = await Bun.file(path).bytes();
 
 export function inspect(png_buffer: Uint8Array) {
-  const [chunkSignature, rest] = U8STake(png_buffer, 8);
+  const [chunkSignature, rest] = U8Take(png_buffer, 8);
   const chunks = extractChunks(rest);
 
   console.log('Signature');
-  console.log(...U8SToHex(chunkSignature));
+  console.log(...U8ToHex(chunkSignature));
   console.log();
 
   let idat_datas: Uint8Array[] = [];
@@ -19,20 +19,20 @@ export function inspect(png_buffer: Uint8Array) {
 
   for (const chunk of chunks) {
     const { data, size, type, crc } = analyzeChunk(chunk);
-    if (U8SToASCII(type) === 'IDAT') {
+    if (U8ToASCII(type) === 'IDAT') {
       idat_datas.push(data);
       total_idat_size += size;
     }
     console.log('Chunk');
-    if (U8SToASCII(type) === 'IHDR') {
+    if (U8ToASCII(type) === 'IHDR') {
       IHDR = new Chunk(chunk);
-      console.log(...U8SToHex(chunk));
+      console.log(...U8ToHex(chunk));
     }
     console.log('size:', size);
-    console.log('type:', U8SToASCII(type));
+    console.log('type:', U8ToASCII(type));
     // console.log('data:', ...toHex(data));
-    console.log('crc:', ...U8SToHex(crc));
-    console.log('computed crc:', ...U8SToHex(U8SFromUint32(initCRC(U8SConcat([type, data])))));
+    console.log('crc:', ...U8ToHex(crc));
+    console.log('computed crc:', ...U8ToHex(U8FromUint32(CRC.Init(U8Concat([type, data])))));
     console.log();
   }
 
@@ -40,7 +40,7 @@ export function inspect(png_buffer: Uint8Array) {
   console.log('Total IDAT Compressed Size:', total_idat_size);
 
   // Combine IDATs, Decompress, Split Decompressed Data into Scanlines, Group Scanlines, Compress Groups, Create New Pngs
-  const compressed_bytes = U8SConcat(idat_datas);
+  const compressed_bytes = U8Concat(idat_datas);
   console.log('Compressed Data Size:', compressed_bytes.byteLength);
 
   console.log('Decompressing Data');
@@ -65,6 +65,6 @@ export function inspect(png_buffer: Uint8Array) {
   console.log('Extracting Scanlines');
   const scanlineSize = getScanlineSize({ width, bitDepth, colorType });
   console.log('Scanline Size:', scanlineSize);
-  const scanlines = U8SSplit(decompressed_bytes, scanlineSize);
+  const scanlines = U8Split(decompressed_bytes, scanlineSize);
   console.log(scanlines.length, 'Scanlines Extracted');
 }

@@ -1,15 +1,16 @@
-import { ArrayEquals, U8S } from './lib/array.js';
+import { ArrayEquals } from './lib/ericchase/Algorithm/Array/Array.js';
+import { U8 } from './lib/ericchase/Algorithm/Array/Uint8Array.js';
 import { RecursiveAsyncIterator } from './lib/ericchase/Utility/RecursiveAsyncIterator.js';
 import { DataTransferItemIterator } from './lib/ericchase/Web API/DataTransfer.js';
 import { FileSystemDirectoryEntryIterator, FileSystemEntryIterator } from './lib/ericchase/Web API/FileSystem.js';
 
 const webkitdirectory_support = /android|iphone|mobile/i.test(window.navigator.userAgent) === true ? false : true;
 
-const bits_off = U8S([0, 0, 0, 0]);
-const bits_on = U8S([1, 1, 1, 1]);
+const bits_off = U8([0, 0, 0, 0]);
+const bits_on = U8([1, 1, 1, 1]);
 
 export function setupDragAndDropFilePicker(element: HTMLInputElement, fn: { onStart: () => void; onEntry: (entry: File) => void; onEnd: () => void }) {
-  const bits_check = U8S([0, 0, 0, 0]);
+  const bits_check = U8([0, 0, 0, 0]);
   if (webkitdirectory_support) {
     element.toggleAttribute('webkitdirectory', true);
   }

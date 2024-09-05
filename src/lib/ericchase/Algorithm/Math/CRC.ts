@@ -16,15 +16,15 @@ for (let n = 0; n < 256; n++) {
   crc_table[n] = c;
 }
 
-export function updateCRC(crc: number, bytes: Uint8Array) {
-  let c = crc >>> 0;
-  for (let n = 0; n < bytes.length; n++) {
-    c = crc_table[(c ^ bytes[n]) & 0xff] ^ (c >>> 8);
+export class CRC {
+  static Init(bytes: Uint8Array) {
+    return (CRC.Update(0xffffffff >>> 0, bytes) ^ (0xffffffff >>> 0)) >>> 0;
   }
-  return c >>> 0;
-}
-
-/* Return the CRC of the bytes buf[0..len-1]. */
-export function initCRC(bytes: Uint8Array) {
-  return (updateCRC(0xffffffff >>> 0, bytes) ^ (0xffffffff >>> 0)) >>> 0;
+  static Update(crc: number, bytes: Uint8Array) {
+    let c = crc >>> 0;
+    for (let n = 0; n < bytes.length; n++) {
+      c = crc_table[(c ^ bytes[n]) & 0xff] ^ (c >>> 8);
+    }
+    return c >>> 0;
+  }
 }

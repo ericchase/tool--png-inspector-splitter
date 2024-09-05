@@ -1,13 +1,14 @@
-import { ArraySplit, U8SConcat, U8SSplit, U8STake, U8SToASCII, U8SToHex } from './array.js';
-import { Chunk, compressImageData, createIDATchunk, createIHDRchunk, decompressImageData, extractChunks, getScanlineSize, parseIHDRChunk } from './png.js';
-
 // const path = Bun.argv[2];
 // const max_height_per_file = Bun.argv[3] === undefined ? 4096 : Number.parseInt(Bun.argv[3]);
 // const buffer = await Bun.file(path).bytes();
 
+import { ArraySplit } from './ericchase/Algorithm/Array/Array.js';
+import { U8Concat, U8Split, U8Take, U8ToASCII, U8ToHex } from './ericchase/Algorithm/Array/Uint8Array.js';
+import { Chunk, compressImageData, createIDATchunk, createIHDRchunk, decompressImageData, extractChunks, getScanlineSize, parseIHDRChunk } from './png.js';
+
 export async function split(buffer: Uint8Array, height_per_file = 4096): Promise<Uint8Array[]> {
   // Extract the Signature
-  const [signatureBytes, rest] = U8STake(buffer, 8);
+  const [signatureBytes, rest] = U8Take(buffer, 8);
   const chunks = extractChunks(rest).map((bytes) => new Chunk(bytes));
 
   // Extract All the Chunks
@@ -39,12 +40,12 @@ export async function split(buffer: Uint8Array, height_per_file = 4096): Promise
   }
 
   console.log('Extract IHDR and Parse');
-  const IHDR = topChunks.find((chunk) => U8SToASCII(chunk.type) === 'IHDR');
+  const IHDR = topChunks.find((chunk) => U8ToASCII(chunk.type) === 'IHDR');
   if (!IHDR) throw 'error: IHDR';
   const { bitDepth, colorType, compressionMethod, filterMethod, height, interlaceMethod, width } = parseIHDRChunk(IHDR);
 
   // Combine IDATs, Decompress, Split Decompressed Data into Scanlines, Group Scanlines, Compress Groups, Create New Pngs
-  const compressed_bytes = U8SConcat(dataChunks.map((chunk) => chunk.data));
+  const compressed_bytes = U8Concat(dataChunks.map((chunk) => chunk.data));
   console.log('Compressed Data Size:', compressed_bytes.byteLength);
 
   console.log('Decompressing Data');
@@ -53,11 +54,11 @@ export async function split(buffer: Uint8Array, height_per_file = 4096): Promise
   console.log('Decompressed Data Size:', decompressed_bytes.byteLength);
 
   // Get top chunks without IHDR
-  const topChunksWithoutIHDR = topChunks.filter((chunk) => U8SToASCII(chunk.type) !== 'IHDR');
+  const topChunksWithoutIHDR = topChunks.filter((chunk) => U8ToASCII(chunk.type) !== 'IHDR');
 
   console.log('Extracting Scanlines');
   const scanlineSize = getScanlineSize({ width, bitDepth, colorType });
-  const scanlines = U8SSplit(decompressed_bytes, scanlineSize);
+  const scanlines = U8Split(decompressed_bytes, scanlineSize);
   console.log(scanlines.length, 'Scanlines Extracted');
 
   // const recompressed_bytes = compressIDATdata(decompressed_bytes);
@@ -142,7 +143,7 @@ export async function split(buffer: Uint8Array, height_per_file = 4096): Promise
   //     group.push(scanline);
   //     groupsize += scanline.byteLength;
   //   } else {
-  //     scanline_groups.push(U8SConcat(group));
+  //     scanline_groups.push(U8Concat(group));
   //     group = [];
   //     groupsize = 0;
   //   }
@@ -161,7 +162,7 @@ export async function split(buffer: Uint8Array, height_per_file = 4096): Promise
   for (let index = 0; index < scanline_groups.length; index++) {
     console.log('PNG', index);
     const group = scanline_groups[index];
-    const decompressed_data = U8SConcat(group);
+    const decompressed_data = U8Concat(group);
     checkScanlineFilterBytes(decompressed_data, scanlineSize);
     // test.push(decompressed_data);
     const compressed_data = compressImageData(decompressed_data);
@@ -171,21 +172,21 @@ export async function split(buffer: Uint8Array, height_per_file = 4096): Promise
     const newIDAT = createIDATchunk(compressed_data);
     // Create the new IHDR
     const newIHDR = createIHDRchunk({ width, height: group.length, bitDepth, colorType, compressionMethod, filterMethod, interlaceMethod });
-    console.log('new IHDR:', ...U8SToHex(newIHDR));
-    png_out_buffers.push(U8SConcat([signatureBytes, newIHDR, ...topChunksWithoutIHDR.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));
+    console.log('new IHDR:', ...U8ToHex(newIHDR));
+    png_out_buffers.push(U8Concat([signatureBytes, newIHDR, ...topChunksWithoutIHDR.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));
     // const outpath = path + '__split' + index.toString(10).padStart(2, '0') + '.png';
     // console.log('Writing', outpath);
-    // await Bun.write(outpath, U8SConcat([signatureBytes, newIHDR, ...topChunksWithoutIHDR.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));
+    // await Bun.write(outpath, U8Concat([signatureBytes, newIHDR, ...topChunksWithoutIHDR.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));
   }
 
   // // this new single file is perfect
 
-  // const decompressed_total = U8SConcat(test);
+  // const decompressed_total = U8Concat(test);
   // console.log('Equal:', ArrayEquals(decompressed_total, decompressed_bytes));
   // const compressed_total = compressImageData(decompressed_total);
   // if (!compressed_total) throw 'error: compressed_total';
   // const newIDAT = createIDATchunk(compressed_total);
-  // await Bun.write(path + '__split-test.png', U8SConcat([signatureBytes, IHDR.bytes, ...topChunksWithoutIHDR.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));
+  // await Bun.write(path + '__split-test.png', U8Concat([signatureBytes, IHDR.bytes, ...topChunksWithoutIHDR.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));
 
   return png_out_buffers;
 }
