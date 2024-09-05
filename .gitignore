@@ -26,7 +26,7 @@ yarn-error.log*
 *.exe
 *.mkv
 *.mp4
-**/build/*
+# **/build/*
 **/debug/*
 **/src-tauri/target
 sync.ffs_db

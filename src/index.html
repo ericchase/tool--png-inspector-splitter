@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PNG Inspector Splitter</title>
+    <style>
+      /* tailwind like */
+      .flex {
+        display: flex;
+      }
+      .flex-col {
+        flex-direction: column;
+      }
+      .gap-0_125 {
+        gap: 0.125em;
+      }
+      .gap-1_0 {
+        gap: 1em;
+      }
+      .h-full {
+        height: 100%;
+      }
+      .h-screen {
+        height: 100vh;
+      }
+      .justify-center {
+        justify-content: center;
+      }
+      .m-0 {
+        margin: 0px;
+      }
+      .p-0 {
+        padding: 0;
+      }
+      .text-center {
+        text-align: center;
+      }
+
+      /* other */
+      main > div {
+        background-color: black;
+        padding-block: 1px;
+      }
+      main > div > img {
+        display: block;
+        margin-inline: auto;
+        max-inline-size: 100%;
+      }
+    </style>
+    <link rel="stylesheet" href="./drag-and-drop-file-picker.css" />
+    <script src="./index.js" type="module"></script>
+  </head>
+  <body class="h-screen m-0 p-0">
+    <div class="drag-and-drop-file-picker">
+      <input type="file" multiple />
+      <div>Drop Image Folder Here</div>
+      <div>(or click to open file picker)</div>
+    </div>
+    <main class="flex flex-col gap-0_125"></main>
+  </body>
+</html>

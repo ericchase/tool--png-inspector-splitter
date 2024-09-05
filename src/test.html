@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <title>Image</title>
+    <link rel="stylesheet" href="./drag-and-drop-file-picker.css" />
+    <link rel="stylesheet" href="./index.css" />
+    <script src="./index.js" type="module"></script>
+  </head>
+  <body>
+    <gap-v></gap-v>
+    <div class="img-placeholder">
+      <div class="drag-and-drop-file-picker">
+        <input type="file" multiple />
+        <span>
+          <span>Drop Image</span>
+          <br />
+          <span>(click to upload)</span>
+        </span>
+      </div>
+      <img hiddden />
+    </div>
+    <gap-v></gap-v>
+    <div class="btn-container">
+      <button id="btn-inspect">Inspect</button>
+      <gap-h></gap-h>
+      <button id="btn-split">Split</button>
+    </div>
+    <gap-v></gap-v>
+  </body>
+</html>
