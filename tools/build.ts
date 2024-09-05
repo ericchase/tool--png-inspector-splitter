@@ -63,4 +63,3 @@ await copy({
 
 // Cleanup
 await DeleteDirectory(tempDir);
-await Run('bun run prettier ' + buildDir + ' --write');
