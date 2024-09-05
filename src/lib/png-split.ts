@@ -1,5 +1,5 @@
-import { ArraySplit, U8SConcat, U8SSplit, U8STake, U8SToASCII, U8SToHex } from './lib/array.js';
-import { Chunk, compressImageData, createIDATchunk, createIHDRchunk, decompressImageData, extractChunks, getScanlineSize, parseIHDRChunk } from './lib/png.js';
+import { ArraySplit, U8SConcat, U8SSplit, U8STake, U8SToASCII, U8SToHex } from './array.js';
+import { Chunk, compressImageData, createIDATchunk, createIHDRchunk, decompressImageData, extractChunks, getScanlineSize, parseIHDRChunk } from './png.js';
 
 // const path = Bun.argv[2];
 // const max_height_per_file = Bun.argv[3] === undefined ? 4096 : Number.parseInt(Bun.argv[3]);

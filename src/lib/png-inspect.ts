@@ -1,6 +1,6 @@
-import { U8SConcat, U8SFromUint32, U8SSplit, U8STake, U8SToASCII, U8SToHex } from './lib/array.js';
-import { initCRC } from './lib/crc.js';
-import { Chunk, analyzeChunk, decompressImageData, extractChunks, getScanlineSize, parseIHDRChunk } from './lib/png.js';
+import { U8SConcat, U8SFromUint32, U8SSplit, U8STake, U8SToASCII, U8SToHex } from './array.js';
+import { initCRC } from './crc.js';
+import { Chunk, analyzeChunk, decompressImageData, extractChunks, getScanlineSize, parseIHDRChunk } from './png.js';
 
 // const [, , path] = Bun.argv;
 // const buffer = await Bun.file(path).bytes();

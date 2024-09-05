@@ -42,7 +42,7 @@ toCopy.update(
 toExclude.scan(sourceDir, ...htmlList);
 
 // Bundle
-const tsList = ['index.ts'];
+const tsList = ['**/*.ts'];
 const toBundle = new GlobManager() //
   .scan(sourceDir, ...tsList);
 toCopy.update(
