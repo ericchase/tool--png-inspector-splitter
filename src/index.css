@@ -1,5 +1,6 @@
 :where(*) {
   box-sizing: border-box;
+  font-family: unset;
   font-size: 1em;
   margin: 0;
   padding: 0;
