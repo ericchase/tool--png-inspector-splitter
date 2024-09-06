@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PNG Inspector Splitter</title>
+    <link rel="stylesheet" href="./public/components/drag-and-drop-file-picker/drag-and-drop-file-picker.css" />
+    <link rel="stylesheet" href="./public/index.css" />
+    <script src="./public/index.js" type="module"></script>
+  </head>
+  <body>
+    <div class="entry-point">
+      <div class="gap-v image-viewer-gap remove"></div>
+      <div id="image-viewer">
+        <div class="drag-and-drop-file-picker" id="file-picker">
+          <input type="file" />
+          <span>
+            <span>Drop image here.</span>
+            <br />
+            <br />
+            <span>... or click to browse ...</span>
+          </span>
+        </div>
+      </div>
+      <div class="gap-v image-viewer-gap remove"></div>
+      <div id="edit-buttons">
+        <button id="btn-inspect">Inspect</button>
+        <button id="btn-split">Split</button>
+      </div>
+      <div class="gap-v"></div>
+      <div id="output-container" class="remove"></div>
+      <div class="gap-v output-container-gap remove"></div>
+    </div>
+  </body>
+</html>

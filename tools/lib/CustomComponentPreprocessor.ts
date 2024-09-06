@@ -3,12 +3,14 @@ import { LazyTask } from '../../src/lib/ericchase/Utility/Task.js';
 import type { HTMLPreprocessor } from './build.js';
 
 export class CustomComponentPreprocessor {
+  componentUsageCount = new Map<string, number>();
   componentLoaders = new Map<string, LazyTask<string | undefined>>();
   get preprocess(): HTMLPreprocessor {
     return async (root: NodeHTMLParser.HTMLElement) => {
       for (const [tag, loader] of this.componentLoaders) {
         const targetElements = root.querySelectorAll(tag);
         if (targetElements.length > 0) {
+          this.componentUsageCount.set(tag, (this.componentUsageCount.get(tag) ?? 0) + 1);
           const componentHTML = await loader.get;
           if (componentHTML) {
             for (const element of root.querySelectorAll(tag)) {
@@ -54,12 +56,14 @@ export class CustomComponentPreprocessor {
   }
   registerComponentBody(tag: string, body: string) {
     if (!this.componentLoaders.has(tag)) {
+      this.componentUsageCount.set(tag, 0);
       this.componentLoaders.set(tag, new LazyTask(async () => body));
     }
     return this;
   }
   registerComponentPath(tag: string, path: string, as_is = false) {
     if (!this.componentLoaders.has(tag)) {
+      this.componentUsageCount.set(tag, 0);
       this.componentLoaders.set(
         tag,
         new LazyTask(async () => {

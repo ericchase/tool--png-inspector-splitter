@@ -1,0 +1,28 @@
+:where(.drag-and-drop-file-picker) {
+  & {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    flex-flow: column nowrap;
+    height: 100%;
+    justify-content: center;
+    position: relative;
+    text-align: center;
+    width: 100%;
+  }
+  & > input {
+    background: transparent;
+    cursor: inherit;
+    display: block;
+    filter: alpha(opacity=0);
+    left: 0;
+    max-height: 100%;
+    max-width: 100%;
+    min-height: 100%;
+    min-width: 100%;
+    opacity: 0;
+    outline: none;
+    position: absolute;
+    top: 0;
+  }
+}

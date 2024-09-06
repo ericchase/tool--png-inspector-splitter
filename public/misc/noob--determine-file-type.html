@@ -1,0 +1,36 @@
+<label for="fileInp" id="fileInputLabel">
+  <span>Click here</span>
+  <input type="file" id="fileInp" accept="*/*" multiple />
+</label>
+
+<div id="example"></div>
+
+<script>
+  const fileLabel = document.getElementById('fileInputLabel');
+  const fileInput = fileLabel.querySelector('input');
+  const example = document.getElementById('example');
+
+  fileInput.addEventListener('change', function handleFiles() {
+    for (const selectedFile of fileInput.files) {
+      example.innerText += `\n${selectedFile.name}`;
+
+      if (selectedFile.type === 'image/gif') {
+        alert('Gif file selected.');
+      } else if (selectedFile.type.startsWith('image/')) {
+        alert('Image file selected.');
+      } else if (selectedFile.type.startsWith('video/')) {
+        alert('Video file selected.');
+      } else if (selectedFile.type.startsWith('audio/')) {
+        alert('Audio file selected.');
+      } else if (selectedFile.type === 'application/zip') {
+        alert('Zip file selected.');
+      } else if (selectedFile.type.startsWith('application/')) {
+        alert('Document file selected.');
+      } else if (selectedFile.type.startsWith('text/')) {
+        alert('Text file selected.');
+      } else {
+        console.log('Okay.');
+      }
+    }
+  });
+</script>

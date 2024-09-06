@@ -1,11 +1,12 @@
+import { CopyFile } from '../src/lib/ericchase/Platform/Bun/Fs.js';
 import { GlobManager } from '../src/lib/ericchase/Platform/Bun/Path.js';
-import { CleanDirectory, DeleteDirectory } from '../src/lib/ericchase/Platform/Node/Fs.js';
+import { CleanDirectory, DeleteDirectory, DeleteFile } from '../src/lib/ericchase/Platform/Node/Fs.js';
 import { NormalizePath } from '../src/lib/ericchase/Platform/Node/Path.js';
 import { bundle, copy, processHTML } from './lib/build.js';
 import { CustomComponentPreprocessor } from './lib/CustomComponentPreprocessor.js';
 
 // User Values
-const buildDir = NormalizePath('./build') + '/';
+const buildDir = NormalizePath('./public') + '/';
 const sourceDir = NormalizePath('./src') + '/';
 const tempDir = NormalizePath('./temp') + '/';
 
@@ -14,10 +15,10 @@ await CleanDirectory(buildDir);
 await CleanDirectory(tempDir);
 
 const toCopy = new GlobManager() //
-  .scan(sourceDir, '*.css');
+  .scan(sourceDir, '**/*.css');
 
 const toExclude = new GlobManager() //
-  .scan(sourceDir, '{@types,cli,lib}/**', 'components/**');
+  .scan(sourceDir, '{@types,cli,lib}/**', 'components/**/*.html');
 
 // Process HTML
 const htmlList = ['**/*.html'];
@@ -39,6 +40,9 @@ toCopy.update(
   }),
 );
 toExclude.scan(sourceDir, ...htmlList);
+for (const [tag, count] of customComponentPreprocessor.componentUsageCount) {
+  console.log(count === 1 ? '1 copy' : count + ' copies', 'of', tag);
+}
 
 // Bundle
 const tsList = ['**/*.ts'];
@@ -59,6 +63,11 @@ await copy({
   toCopy,
   toExclude,
 });
+
+// Move Index
+if (await CopyFile({ from: buildDir + 'index.html', to: './index.html' })) {
+  DeleteFile(buildDir + 'index.html');
+}
 
 // Cleanup
 await DeleteDirectory(tempDir);

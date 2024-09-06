@@ -1,6 +1,8 @@
+import type { N } from '../Utility/Type.js';
+
 export class DataTransferItemIterator {
   list: DataTransferItem[] = [];
-  constructor(items?: DataTransferItem | DataTransferItem[] | DataTransferItemList | null) {
+  constructor(items?: N<DataTransferItem> | DataTransferItemList | null) {
     if (items instanceof DataTransferItem) {
       this.list = [items];
     } else if (items instanceof DataTransferItemList) {

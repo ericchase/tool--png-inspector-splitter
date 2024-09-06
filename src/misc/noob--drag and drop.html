@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <title>Drag & Drop</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        background-color: #abadb5;
+        width: 100%;
+        height: 100%;
+        color: #2f3137;
+        font-family: Arial, Sans-Serif;
+        font-size: 16px;
+      }
+
+      .drag--drop-container {
+        display: flex;
+        position: relative;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: auto;
+        padding: 20px 20px 10px;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+      .file-upload {
+        display: flex;
+        position: relative;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #eaeced;
+        width: 250px;
+        height: 135px;
+        border: 4px solid #363940;
+        border-bottom: 0;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+      }
+      .file-upload > span {
+        transform: scale(1);
+        background-color: #d0d5de00 /*#b4bed000*/;
+        width: auto;
+        height: auto;
+        padding: 0;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+      .file-upload:hover > span {
+        transform: scale(1.14);
+        background-color: #d0d5de /*#b4bed099*/;
+        padding: 4px 6px;
+        transition: all 0.2s ease;
+      }
+      .separator-line {
+        display: flex;
+        position: relative;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        background-color: #363940;
+        width: 250px;
+        height: 4px;
+      }
+      .folder-upload {
+        display: flex;
+        position: relative;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #eaeced;
+        width: 250px;
+        height: 135px;
+        border: 4px solid #363940;
+        border-top: 0;
+        border-radius: 0 0 8px 8px;
+        cursor: pointer;
+      }
+      .folder-upload > span {
+        transform: scale(1);
+        background-color: #d0d5de00;
+        width: auto;
+        height: auto;
+        padding: 0;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+      .folder-upload:hover > span {
+        transform: scale(1.14);
+        background-color: #d0d5de;
+        padding: 4px 6px;
+        transition: all 0.2s ease;
+      }
+      .otpt {
+        display: flex;
+        position: relative;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: auto;
+        gap: 6px;
+      }
+      .otpt > output {
+        background-color: #f4f6f6;
+        width: auto;
+        height: auto;
+        padding: 4px 6px;
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="drag--drop-container">
+      <div class="file-upload">
+        <span>Upload File</span>
+      </div>
+      <div class="separator-line"></div>
+      <div class="folder-upload">
+        <span>Upload Folder</span>
+      </div>
+    </div>
+
+    <div class="otpt">
+      <span>Output:</span>
+      <output>No output yet</output>
+    </div>
+  </body>
+</html>

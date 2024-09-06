@@ -6,7 +6,7 @@ import { ArraySplit } from './ericchase/Algorithm/Array/Array.js';
 import { U8Concat, U8Split, U8Take, U8ToASCII, U8ToHex } from './ericchase/Algorithm/Array/Uint8Array.js';
 import { Chunk, compressImageData, createIDATchunk, createIHDRchunk, decompressImageData, extractChunks, getScanlineSize, parseIHDRChunk } from './png.js';
 
-export async function split(buffer: Uint8Array, height_per_file = 4096): Promise<Uint8Array[]> {
+export async function PNGSplit(buffer: Uint8Array, height_per_file = 4096, output?: (data?: any[]) => void): Promise<Uint8Array[]> {
   // Extract the Signature
   const [signatureBytes, rest] = U8Take(buffer, 8);
   const chunks = extractChunks(rest).map((bytes) => new Chunk(bytes));
@@ -39,33 +39,33 @@ export async function split(buffer: Uint8Array, height_per_file = 4096): Promise
     index++;
   }
 
-  console.log('Extract IHDR and Parse');
+  output?.(['Extract IHDR and Parse']);
   const IHDR = topChunks.find((chunk) => U8ToASCII(chunk.type) === 'IHDR');
   if (!IHDR) throw 'error: IHDR';
   const { bitDepth, colorType, compressionMethod, filterMethod, height, interlaceMethod, width } = parseIHDRChunk(IHDR);
 
   // Combine IDATs, Decompress, Split Decompressed Data into Scanlines, Group Scanlines, Compress Groups, Create New Pngs
   const compressed_bytes = U8Concat(dataChunks.map((chunk) => chunk.data));
-  console.log('Compressed Data Size:', compressed_bytes.byteLength);
+  output?.(['Compressed Data Size:', compressed_bytes.byteLength]);
 
-  console.log('Decompressing Data');
+  output?.(['Decompressing Data']);
   const decompressed_bytes = decompressImageData(compressed_bytes);
   if (!decompressed_bytes) throw 'error: decompressed_bytes';
-  console.log('Decompressed Data Size:', decompressed_bytes.byteLength);
+  output?.(['Decompressed Data Size:', decompressed_bytes.byteLength]);
 
   // Get top chunks without IHDR
   const topChunksWithoutIHDR = topChunks.filter((chunk) => U8ToASCII(chunk.type) !== 'IHDR');
 
-  console.log('Extracting Scanlines');
+  output?.(['Extracting Scanlines']);
   const scanlineSize = getScanlineSize({ width, bitDepth, colorType });
   const scanlines = U8Split(decompressed_bytes, scanlineSize);
-  console.log(scanlines.length, 'Scanlines Extracted');
+  output?.([scanlines.length, 'Scanlines Extracted']);
 
   // const recompressed_bytes = compressIDATdata(decompressed_bytes);
   // if (!recompressed_bytes) throw 'error: recompressed_bytes';
   // const newIDAT = createIDAT(recompressed_bytes);
   // const outpath = path + '__split00.png';
-  // console.log('Writing', outpath);
+  // output?.(['Writing', outpath]);
   // await Bun.write(outpath, U8Concat([signatureBytes, ...topChunks.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));
 
   // the individual files produced from this loop have issues
@@ -148,41 +148,41 @@ export async function split(buffer: Uint8Array, height_per_file = 4096): Promise
   //     groupsize = 0;
   //   }
   // }
-  // console.log('Group Count:', scanline_groups.length);
+  // output?.(['Group Count:', scanline_groups.length]);
 
-  console.log('Validating Scanlines');
+  output?.(['Validating Scanlines']);
   for (const scanline of scanlines) {
     validateScanline(scanline);
   }
 
-  console.log('Creating New PNGs');
+  output?.(['Creating New PNGs']);
   // let test: Uint8Array[] = [];
   const scanline_groups = ArraySplit(scanlines, height_per_file);
   const png_out_buffers: Uint8Array[] = [];
   for (let index = 0; index < scanline_groups.length; index++) {
-    console.log('PNG', index);
+    output?.(['PNG', index]);
     const group = scanline_groups[index];
     const decompressed_data = U8Concat(group);
     checkScanlineFilterBytes(decompressed_data, scanlineSize);
     // test.push(decompressed_data);
     const compressed_data = compressImageData(decompressed_data);
     if (!compressed_data) throw 'error: compressed_data';
-    console.log('compressed length:', compressed_data.byteLength);
+    output?.(['compressed length:', compressed_data.byteLength]);
     // Create the new IDAT
     const newIDAT = createIDATchunk(compressed_data);
     // Create the new IHDR
     const newIHDR = createIHDRchunk({ width, height: group.length, bitDepth, colorType, compressionMethod, filterMethod, interlaceMethod });
-    console.log('new IHDR:', ...U8ToHex(newIHDR));
+    output?.(['new IHDR:', ...U8ToHex(newIHDR)]);
     png_out_buffers.push(U8Concat([signatureBytes, newIHDR, ...topChunksWithoutIHDR.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));
     // const outpath = path + '__split' + index.toString(10).padStart(2, '0') + '.png';
-    // console.log('Writing', outpath);
+    // output?.(['Writing', outpath]);
     // await Bun.write(outpath, U8Concat([signatureBytes, newIHDR, ...topChunksWithoutIHDR.map((_) => _.bytes), newIDAT, ...botChunks.map((_) => _.bytes)]));
   }
 
   // // this new single file is perfect
 
   // const decompressed_total = U8Concat(test);
-  // console.log('Equal:', ArrayEquals(decompressed_total, decompressed_bytes));
+  // output?.(['Equal:', ArrayEquals(decompressed_total, decompressed_bytes)]);
   // const compressed_total = compressImageData(decompressed_total);
   // if (!compressed_total) throw 'error: compressed_total';
   // const newIDAT = createIDATchunk(compressed_total);

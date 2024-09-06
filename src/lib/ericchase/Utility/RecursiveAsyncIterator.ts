@@ -1,7 +1,9 @@
-export class RecursiveAsyncIterator<In, Out> {
-  constructor(protected fn: (value: Iterable<In> | AsyncIterable<In>, push: (value: Iterable<In> | AsyncIterable<In>) => void) => Iterable<Out> | AsyncIterable<Out>) {}
-  async *iterate(init: Iterable<In> | AsyncIterable<In>): Iterable<Out> | AsyncIterable<Out> {
-    const list: (Iterable<In> | AsyncIterable<In>)[] = [init];
+import type { SyncAsyncIterable } from './Type.js';
+
+export class RecursiveIterator<In, Out> {
+  constructor(protected fn: (value: SyncAsyncIterable<In>, push: (value: SyncAsyncIterable<In>) => void) => SyncAsyncIterable<Out>) {}
+  async *iterate(init: SyncAsyncIterable<In>): SyncAsyncIterable<Out> {
+    const list: SyncAsyncIterable<In>[] = [init];
     for (let i = 0; i < list.length; i++) {
       for await (const fSEntry of this.fn(list[i], (value) => {
         list.push(value);
