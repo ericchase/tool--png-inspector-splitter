@@ -1,4 +1,5 @@
 import { setupDragAndDropFilePicker } from './components/drag-and-drop-file-picker/drag-and-drop-file-picker.js';
+import type { N } from './lib/ericchase/Utility/Type.js';
 import { PNGInspect } from './lib/png-inspect.js';
 import { PNGSplit } from './lib/png-split.js';
 
@@ -60,7 +61,7 @@ if (file_picker) {
       },
       onUploadNextFile: showImageInViewer,
       onUploadError(error) {
-        addTextToOutput(error, true);
+        addTextsToOutput(error, true);
       },
     },
     {
@@ -109,7 +110,7 @@ async function showImageInViewer(file: File, done: () => void) {
       }
     }
   } catch (error) {
-    addTextToOutput(`${error}`, true);
+    addTextsToOutput(error, true);
     resetViewer();
   }
   done();
@@ -118,54 +119,65 @@ async function showImageInViewer(file: File, done: () => void) {
 if (btn_inspect instanceof HTMLButtonElement) {
   btn_inspect.disabled = true;
   btn_inspect.addEventListener('click', async () => {
-    btn_inspect.disabled = true;
     const bytes = await selected_file?.bytes();
-    const name = await selected_file?.name;
+    const name = selected_file?.name;
     if (bytes) {
       const logs: string[] = [];
       if (name) logs.push(`"${name}"\n`);
       PNGInspect(bytes, (data: any[] = []) => {
         logs.push(data.join(' '));
       });
-      addTextToOutput(logs.join('\n'));
+      addTextsToOutput(logs);
+      addTextsToOutput([`Inspection report for "${name}"`]);
     }
   });
 }
 if (btn_split instanceof HTMLButtonElement) {
   btn_split.disabled = true;
   btn_split.addEventListener('click', async () => {
-    btn_split.disabled = true;
     const bytes = await selected_file?.bytes();
+    const name = selected_file?.name;
     if (bytes) {
-      const output_buffers = await PNGSplit(bytes, 1000);
-      const [img] = output_buffers.map(async (buffer) => addImageToOutput(buffer));
-      (await img)?.scrollIntoView(false);
+      const size_input = Number.parseInt(document.querySelector('#split-size')?.value ?? 1000);
+      const output_buffers = await PNGSplit(bytes, size_input);
+      await addImagesToOutput(output_buffers);
+      addTextsToOutput([`Split results for "${name}"`, '', `Size: ${size_input}`]);
     }
   });
 }
 
-async function addImageToOutput(buffer: Uint8Array) {
-  try {
-    const img_url = URL.createObjectURL(new Blob([buffer], { type: 'image/png' }));
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const img = document.createElement('img');
-      img.src = img_url;
-      img.addEventListener('load', () => resolve(img));
-      img.addEventListener('error', reject);
-    });
-    if (output_container) {
-      output_container.classList.remove('remove');
-      for (const gap of output_container_gaps ?? []) {
-        gap.classList.remove('remove');
-      }
-      output_container.prepend(img);
-      return img;
+async function addImagesToOutput(buffers: Uint8Array[]) {
+  const imgs = [];
+  for (const buffer of buffers) {
+    try {
+      const img_url = URL.createObjectURL(new Blob([buffer], { type: 'image/png' }));
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = document.createElement('img');
+        img.src = img_url;
+        img.addEventListener('load', () => resolve(img));
+        img.addEventListener('error', reject);
+      });
+      imgs.push(img);
+    } catch (_) {}
+  }
+  if (output_container) {
+    output_container.classList.remove('remove');
+    for (const gap of output_container_gaps ?? []) {
+      gap.classList.remove('remove');
     }
-  } catch (_) {}
+    for (const img of imgs.reverse()) {
+      output_container.prepend(img);
+    }
+    imgs.at(-1)?.scrollIntoView(false);
+  }
+  return imgs;
 }
 
-function addTextToOutput(text: string, is_error = false) {
+function addTextsToOutput(texts: N<string>, is_error = false) {
   try {
+    if (!Array.isArray(texts)) {
+      texts = [texts];
+    }
     if (output_container) {
       output_container.classList.remove('remove');
       for (const gap of output_container_gaps ?? []) {
@@ -174,7 +186,7 @@ function addTextToOutput(text: string, is_error = false) {
       const div_outer = document.createElement('div');
       const div_inner = document.createElement('div');
       const pre = document.createElement('pre');
-      pre.textContent = text;
+      pre.textContent = texts.join('\n');
       if (is_error) {
         pre.classList.add('error-message');
         const delete_button = document.createElement('div');

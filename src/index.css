@@ -1,5 +1,6 @@
 :where(*) {
   box-sizing: border-box;
+  font-size: 1em;
   margin: 0;
   padding: 0;
 }
@@ -20,6 +21,9 @@
   line-height: 1;
 }
 
+.mis-auto {
+  margin-inline-start: auto;
+}
 .gap-h {
   width: 1em;
   height: 100%;
@@ -54,6 +58,7 @@
     padding: 1em;
   }
 }
+
 #edit-buttons {
   & {
     display: flex;
@@ -63,24 +68,30 @@
     justify-content: space-between;
   }
   & > button {
-    background-color: white;
     border-radius: 0.5em;
     border: 0.25em solid black;
     cursor: pointer;
-    height: 3em;
-    margin: 0;
-    padding: 0;
-    width: 6em;
+    height: 2.5em;
+    width: 5em;
     &:hover {
       background-color: #add8e6;
     }
     &:disabled {
-      background-color: white;
+      background-color: unset;
       border: 0.25em solid lightgray;
       cursor: unset;
     }
   }
+  #split-size {
+    appearance: textfield;
+    border-radius: 0.5em;
+    border: 0.25em solid black;
+    padding-inline: 0.5em;
+    text-align: right;
+    width: 5em;
+  }
 }
+
 #file-picker {
   & {
     background-color: white;
