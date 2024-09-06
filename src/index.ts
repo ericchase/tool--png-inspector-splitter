@@ -62,7 +62,6 @@ if (file_picker) {
       onUploadError(error) {
         addTextToOutput(error, true);
       },
-      onUploadEnd() {},
     },
     {
       accept: '.png', // won't work on mobile
