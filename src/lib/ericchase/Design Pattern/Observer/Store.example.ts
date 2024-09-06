@@ -1,3 +1,5 @@
+import { ConsoleLog } from '../../Utility/Console.js';
+
 type SubscriptionCallback<Value> = (value: Value) => void;
 type UpdateCallback<Value> = (value: Value) => Value;
 
@@ -8,20 +10,20 @@ class Store<Value> {
     this.currentValue = initialValue;
   }
   subscribe(callback: SubscriptionCallback<Value>) {
-    console.log('store, subscribe');
+    ConsoleLog('store, subscribe');
     this.subscriptionSet.add(callback);
     callback(this.currentValue);
     return () => {
-      console.log('store, unsubscribe');
+      ConsoleLog('store, unsubscribe');
       this.subscriptionSet.delete(callback);
     };
   }
   get value(): Value {
-    console.log('store, get');
+    ConsoleLog('store, get');
     return this.currentValue;
   }
   set(value: Value) {
-    console.log('store, set', value);
+    ConsoleLog('store, set', value);
     // If subscriptions should only be triggered once per
     // actual value change, keep this if statement.
     if (this.currentValue !== value) {
@@ -32,7 +34,7 @@ class Store<Value> {
     }
   }
   update(callback: UpdateCallback<Value>) {
-    console.log('store, update');
+    ConsoleLog('store, update');
     this.set(callback(this.currentValue));
   }
 }
@@ -45,7 +47,7 @@ class ComputedStore<SourceValue, ComputedValue> {
     protected computeFn: (value: SourceValue) => ComputedValue,
   ) {}
   subscribe(callback: SubscriptionCallback<ComputedValue>) {
-    console.log('computed, subscribe');
+    ConsoleLog('computed, subscribe');
     if (this.subscriptionSet.size === 0) {
       this.sourceUnsubscribe = this.source.subscribe((value) => {
         const newCachedValue = this.computeFn(value);
@@ -62,7 +64,7 @@ class ComputedStore<SourceValue, ComputedValue> {
       callback(this.cachedValue);
     }
     return () => {
-      console.log('computed, unsubscribe');
+      ConsoleLog('computed, unsubscribe');
       this.subscriptionSet.delete(callback);
       if (this.subscriptionSet.size === 0) {
         this.sourceUnsubscribe?.();
@@ -70,56 +72,56 @@ class ComputedStore<SourceValue, ComputedValue> {
     };
   }
   get value(): ComputedValue {
-    console.log('computed, get');
+    ConsoleLog('computed, get');
     return this.computeFn(this.source.value);
   }
 }
 
 const counter = new Store(0);
-console.log(counter.value); // 0
+ConsoleLog(counter.value); // 0
 counter.set(1);
-console.log(counter.value); // 1
+ConsoleLog(counter.value); // 1
 
 const isEven = new ComputedStore(counter, (value) => (value & 1) === 0);
 
-console.log(isEven.value); // false
+ConsoleLog(isEven.value); // false
 counter.set(2);
-console.log(isEven.value); // true
+ConsoleLog(isEven.value); // true
 
 const parity = new ComputedStore(isEven, (value) => (value ? 'even' : 'odd'));
 
 counter.set(3);
-console.log(parity.value); // odd
+ConsoleLog(parity.value); // odd
 
-console.log();
-console.log('the important part');
+ConsoleLog();
+ConsoleLog('the important part');
 
 // effect(() => node.textContent = parity.value);
-// we will use console.log because this is just a script
-const parityUnsubscribe = parity.subscribe((value) => console.log('EFFECT, parity:', value)); // immediately logs odd; this is akin to the first render
-console.log();
+// we will use ExpectedLog because this is just a script
+const parityUnsubscribe = parity.subscribe((value) => ConsoleLog('EFFECT, parity:', value)); // immediately logs odd; this is akin to the first render
+ConsoleLog();
 counter.set(2); // even
-console.log('isEven:', isEven.value);
-console.log('parity:', parity.value);
-console.log();
+ConsoleLog('isEven:', isEven.value);
+ConsoleLog('parity:', parity.value);
+ConsoleLog();
 counter.set(4); // even
-console.log('isEven:', isEven.value);
-console.log('parity:', parity.value);
-console.log('effect is not called because the value of parity did not change');
+ConsoleLog('isEven:', isEven.value);
+ConsoleLog('parity:', parity.value);
+ConsoleLog('effect is not called because the value of parity did not change');
 
-console.log();
-console.log('unsubscribe');
+ConsoleLog();
+ConsoleLog('unsubscribe');
 parityUnsubscribe();
-console.log('effect will no longer be called, because of unsubscription');
-console.log();
+ConsoleLog('effect will no longer be called, because of unsubscription');
+ConsoleLog();
 counter.set(5); // odd // this is the unnecessary render
-console.log('isEven:', isEven.value);
-console.log('parity:', parity.value);
-console.log();
+ConsoleLog('isEven:', isEven.value);
+ConsoleLog('parity:', parity.value);
+ConsoleLog();
 counter.set(7); // odd // this is the unnecessary render
-console.log('isEven:', isEven.value);
-console.log('parity:', parity.value);
-console.log();
+ConsoleLog('isEven:', isEven.value);
+ConsoleLog('parity:', parity.value);
+ConsoleLog();
 counter.set(4); // even // this is the unnecessary render
-console.log('isEven:', isEven.value);
-console.log('parity:', parity.value);
+ConsoleLog('isEven:', isEven.value);
+ConsoleLog('parity:', parity.value);

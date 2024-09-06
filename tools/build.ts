@@ -2,6 +2,7 @@ import { CopyFile } from '../src/lib/ericchase/Platform/Bun/Fs.js';
 import { GlobManager } from '../src/lib/ericchase/Platform/Bun/Path.js';
 import { CleanDirectory, DeleteDirectory, DeleteFile } from '../src/lib/ericchase/Platform/Node/Fs.js';
 import { NormalizePath } from '../src/lib/ericchase/Platform/Node/Path.js';
+import { ConsoleLog } from '../src/lib/ericchase/Utility/Console.js';
 import { bundle, copy, processHTML } from './lib/build.js';
 import { CustomComponentPreprocessor } from './lib/CustomComponentPreprocessor.js';
 
@@ -41,7 +42,7 @@ toCopy.update(
 );
 toExclude.scan(sourceDir, ...htmlList);
 for (const [tag, count] of customComponentPreprocessor.componentUsageCount) {
-  console.log(count === 1 ? '1 copy' : count + ' copies', 'of', tag);
+  ConsoleLog(count === 1 ? '1 copy' : count + ' copies', 'of', tag);
 }
 
 // Bundle

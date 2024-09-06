@@ -4,6 +4,7 @@
 
 import { ArraySplit } from './ericchase/Algorithm/Array/Array.js';
 import { U8Concat, U8Split, U8Take, U8ToASCII, U8ToHex } from './ericchase/Algorithm/Array/Uint8Array.js';
+import { ConsoleError } from './ericchase/Utility/Console.js';
 import { Chunk, compressImageData, createIDATchunk, createIHDRchunk, decompressImageData, extractChunks, getScanlineSize, parseIHDRChunk } from './png.js';
 
 export async function PNGSplit(buffer: Uint8Array, height_per_file = 4096, output?: (data?: any[]) => void): Promise<Uint8Array[]> {
@@ -77,7 +78,7 @@ export async function PNGSplit(buffer: Uint8Array, height_per_file = 4096, outpu
 
       // Check if the filter byte is within the valid range [0, 4]
       if (filterByte < 0 || filterByte > 4) {
-        console.error(`Invalid filter byte at scanline ${i / scanlineSize}: ${filterByte}`);
+        ConsoleError(`Invalid filter byte at scanline ${i / scanlineSize}: ${filterByte}`);
         return false;
       }
     }
@@ -117,7 +118,7 @@ export async function PNGSplit(buffer: Uint8Array, height_per_file = 4096, outpu
 
     // Validate the filter byte (must be between 0 and 4)
     if (filterByte < 0 || filterByte > 4) {
-      console.error(`Invalid filter byte: ${filterByte}`);
+      ConsoleError(`Invalid filter byte: ${filterByte}`);
       return false;
     }
 
@@ -126,7 +127,7 @@ export async function PNGSplit(buffer: Uint8Array, height_per_file = 4096, outpu
     const scanlineDataLength = scanline.length - 1; // Excluding the filter byte
 
     if (scanlineDataLength !== expectedDataLength) {
-      console.error(`Incorrect scanline data length: expected ${expectedDataLength}, got ${scanlineDataLength}`);
+      ConsoleError(`Incorrect scanline data length: expected ${expectedDataLength}, got ${scanlineDataLength}`);
       return false;
     }
 

@@ -2,6 +2,7 @@ import pako from 'pako';
 import { Uint32ToHex } from './ericchase/Algorithm/Array/Uint32Array.js';
 import { U8Concat, U8FromString, U8FromUint32, U8Take } from './ericchase/Algorithm/Array/Uint8Array.js';
 import { CRC } from './ericchase/Algorithm/Math/CRC.js';
+import { ConsoleError } from './ericchase/Utility/Console.js';
 
 export class Chunk {
   readonly crc: Uint8Array;
@@ -29,7 +30,7 @@ export function compressImageData(data: Uint8Array) {
   try {
     return pako.deflate(data);
   } catch (error) {
-    console.error('Error compressing IDAT data:', error);
+    ConsoleError('Error compressing IDAT data:', error);
     return undefined;
   }
 }
@@ -117,7 +118,7 @@ export function decompressImageData(data: Uint8Array) {
   try {
     return pako.inflate(data);
   } catch (error) {
-    console.error('Error decompressing IDAT data:', error);
+    ConsoleError('Error decompressing IDAT data:', error);
     return undefined;
   }
 }

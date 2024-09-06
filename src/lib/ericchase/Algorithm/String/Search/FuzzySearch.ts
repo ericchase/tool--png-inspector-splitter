@@ -154,5 +154,5 @@ export class TextProcessor {
 //   // }
 //   // return b[1][1] - a[1][1];
 // })) {
-//   console.log(...result);
+//   console log(...result);
 // }

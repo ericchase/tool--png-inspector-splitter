@@ -1,10 +1,11 @@
 import { Sleep } from '../../lib/ericchase/Algorithm/Sleep.js';
 import { JobQueue } from '../../lib/ericchase/Utility/JobQueue.js';
 import { RecursiveIterator } from '../../lib/ericchase/Utility/RecursiveAsyncIterator.js';
-import type { SyncAsyncIterable } from '../../lib/ericchase/Utility/Type.js';
+import type { SyncAsyncIterable } from '../../lib/ericchase/Utility/Types.js';
 import { DataTransferItemIterator } from '../../lib/ericchase/Web API/DataTransfer.js';
-import { FileSystemDirectoryEntryIterator, FileSystemEntryIterator } from '../../lib/ericchase/Web API/FileSystem.js';
-import { GetWebkitEntries, GetWebkitRelativePath, SupportsWebkitDirectory } from '../../lib/ericchase/Web API/HTMLInputElement.js';
+import { GetWebkitRelativePath } from '../../lib/ericchase/Web API/File.js';
+import { FileSystemDirectoryEntryIterator, FileSystemEntryIterator } from '../../lib/ericchase/Web API/FileSystem_Utility.js';
+import { GetWebkitEntries, SupportsWebkitDirectory } from '../../lib/ericchase/Web API/HTMLInputElement.js';
 
 export function setupDragAndDropFilePicker(
   container: Element,
@@ -68,7 +69,7 @@ export function setupDragAndDropFilePicker(
   const fSEntryIterator = new RecursiveIterator<FileSystemEntry, FileSystemFileEntry>(async function* (fSEntryIterator, push) {
     for await (const fSEntry of fSEntryIterator) {
       const path = fSEntry.fullPath.slice(1);
-      if (!fSEntrySet.has(path)) {
+      if (true || !fSEntrySet.has(path)) {
         fSEntrySet.add(path);
         const fsEntries = new FileSystemEntryIterator(fSEntry);
         for (const fSFileEntry of fsEntries.getFileEntry()) {
@@ -119,7 +120,7 @@ export function setupDragAndDropFilePicker(
       }
       for (const file of files) {
         const path = GetWebkitRelativePath(file) + file.name;
-        if (!fSEntrySet.has(path)) {
+        if (true || !fSEntrySet.has(path)) {
           fSEntrySet.add(path);
           await fn.onUploadNextFile(file, () => (done = true));
           // @ts-ignore

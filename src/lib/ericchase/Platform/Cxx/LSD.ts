@@ -1,6 +1,7 @@
 import node_child_process, { type ExecFileOptions } from 'node:child_process';
 import type { ObjectEncodingOptions } from 'node:fs';
 import { GlobSearch } from '../../Algorithm/String/Search/GlobSearch.js';
+import { ConsoleLog } from '../../Utility/Console.js';
 import type { STDIO } from '../Node/Process.js';
 
 export interface LSDParams {
@@ -38,18 +39,20 @@ export async function IterateLSD(
   callback?: (result: LSDResult) => void,
 ) {
   const { stdout = '', stderr } = await command;
-  if (stderr) console.log('LSD Error:', stderr);
-  const results = stdout
-    .split('\n')
-    .filter((line) => line.length > 0)
-    .map((line) => ({
-      kind: line[0] === 'D' ? PathKind.Directory : PathKind.File,
-      path: line.slice(2),
-    }));
-  if (callback) {
-    for (const { kind, path } of results) {
-      if (kind & filterkind) {
-        callback({ kind, path });
+  if (stderr) ConsoleLog('LSD Error:', stderr);
+  if (typeof stdout === 'string') {
+    const results = stdout
+      .split('\n')
+      .filter((line) => line.length > 0)
+      .map((line) => ({
+        kind: line[0] === 'D' ? PathKind.Directory : PathKind.File,
+        path: line.slice(2),
+      }));
+    if (callback) {
+      for (const { kind, path } of results) {
+        if (kind & filterkind) {
+          callback({ kind, path });
+        }
       }
     }
   }

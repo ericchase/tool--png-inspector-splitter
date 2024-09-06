@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { ConsoleLog } from '../../Utility/Console.js';
 
 export interface STDIO {
   stdout?: string | Buffer;
@@ -13,7 +14,7 @@ interface RunParams {
 export function Run({ program, args = [], options = {} }: RunParams) {
   return new Promise<STDIO>((resolve, reject) => {
     try {
-      console.log(`[${new Date().toLocaleTimeString()}] > ${program} ${args.join(' ')}`);
+      ConsoleLog(`[${new Date().toLocaleTimeString()}] > ${program} ${args.join(' ')}`);
       execFile(program, args, options, (error, stdout, stderr) => {
         if (error) return reject(error);
         return resolve({ stdout, stderr });
@@ -27,9 +28,9 @@ export function Run({ program, args = [], options = {} }: RunParams) {
 export async function PipeStdio(command: Promise<STDIO>) {
   try {
     const { stdout, stderr } = await command;
-    if (stdout) console.log(stdout.slice(0, stdout.lastIndexOf('\n')));
-    if (stderr) console.log(stderr.slice(0, stderr.lastIndexOf('\n')));
+    if (stdout) ConsoleLog(stdout.slice(0, stdout.lastIndexOf('\n')));
+    if (stderr) ConsoleLog(stderr.slice(0, stderr.lastIndexOf('\n')));
   } catch (error) {
-    console.log(error);
+    ConsoleLog(error);
   }
 }

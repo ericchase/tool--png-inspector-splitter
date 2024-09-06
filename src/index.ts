@@ -1,5 +1,7 @@
 import { setupDragAndDropFilePicker } from './components/drag-and-drop-file-picker/drag-and-drop-file-picker.js';
-import type { N } from './lib/ericchase/Utility/Type.js';
+import { ConsoleError } from './lib/ericchase/Utility/Console.js';
+import type { N } from './lib/ericchase/Utility/Types.js';
+import { GetBytes } from './lib/ericchase/Web API/File.js';
 import { PNGInspect } from './lib/png-inspect.js';
 import { PNGSplit } from './lib/png-split.js';
 
@@ -110,36 +112,42 @@ async function showImageInViewer(file: File, done: () => void) {
       }
     }
   } catch (error) {
-    addTextsToOutput(error, true);
+    ConsoleError(error);
+    addTextsToOutput(error as any, true);
     resetViewer();
   }
-  done();
+  // done();
 }
 
 if (btn_inspect instanceof HTMLButtonElement) {
   btn_inspect.disabled = true;
   btn_inspect.addEventListener('click', async () => {
-    const bytes = await selected_file?.bytes();
-    const name = selected_file?.name;
-    if (bytes) {
-      const logs: string[] = [];
-      if (name) logs.push(`"${name}"\n`);
-      PNGInspect(bytes, (data: any[] = []) => {
-        logs.push(data.join(' '));
-      });
-      addTextsToOutput(logs);
-      addTextsToOutput([`Inspection report for "${name}"`]);
+    try {
+      const bytes = await GetBytes(selected_file);
+      const name = selected_file?.name;
+      if (bytes) {
+        const logs: string[] = [];
+        if (name) logs.push(`"${name}"\n`);
+        PNGInspect(bytes, (data: any[] = []) => {
+          logs.push(data.join(' '));
+        });
+        addTextsToOutput(logs);
+        addTextsToOutput([`Inspection report for "${name}"`]);
+      }
+    } catch (error) {
+      ConsoleError(error);
     }
   });
 }
 if (btn_split instanceof HTMLButtonElement) {
   btn_split.disabled = true;
   btn_split.addEventListener('click', async () => {
-    const bytes = await selected_file?.bytes();
+    const bytes = await GetBytes(selected_file);
     const name = selected_file?.name;
     if (bytes) {
-      const size_input = Number.parseInt(document.querySelector('#split-size')?.value ?? 1000);
-      const output_buffers = await PNGSplit(bytes, size_input);
+      const size_input = document.querySelector('#split-size');
+      const size = size_input instanceof HTMLInputElement ? Number.parseInt(size_input.value ?? '1000') : 1000;
+      const output_buffers = await PNGSplit(bytes, size);
       await addImagesToOutput(output_buffers);
       addTextsToOutput([`Split results for "${name}"`, '', `Size: ${size_input}`]);
     }
@@ -158,7 +166,9 @@ async function addImagesToOutput(buffers: Uint8Array[]) {
         img.addEventListener('error', reject);
       });
       imgs.push(img);
-    } catch (_) {}
+    } catch (error) {
+      ConsoleError(error);
+    }
   }
   if (output_container) {
     output_container.classList.remove('remove');
@@ -203,5 +213,7 @@ function addTextsToOutput(texts: N<string>, is_error = false) {
       div_outer.scrollIntoView(false);
       return div_outer;
     }
-  } catch (_) {}
+  } catch (error) {
+    ConsoleError(error);
+  }
 }

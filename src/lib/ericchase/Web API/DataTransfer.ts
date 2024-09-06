@@ -1,4 +1,4 @@
-import type { N } from '../Utility/Type.js';
+import type { N } from '../Utility/Types.js';
 
 export class DataTransferItemIterator {
   list: DataTransferItem[] = [];
@@ -14,8 +14,11 @@ export class DataTransferItemIterator {
   *getAsEntry(): Generator<FileSystemEntry> {
     for (const item of this.list) {
       const entry = (item as DataTransferItem & { getAsEntry?: DataTransferItem['webkitGetAsEntry'] }).getAsEntry?.() ?? item.webkitGetAsEntry?.();
-      if (entry instanceof FileSystemEntry) {
+      if (typeof FileSystemEntry !== 'undefined' && entry instanceof FileSystemEntry) {
         yield entry;
+      } else {
+        // TODO figure out what needs to be done to guard this for chrome and other browsers
+        yield entry as FileSystemEntry;
       }
     }
   }

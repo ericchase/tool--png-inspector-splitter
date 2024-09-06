@@ -1,4 +1,4 @@
-import { U8Concat } from '../Uint8Array/U8Concat.js';
+import { U8Concat } from '../Array/Uint8Array.js';
 
 export async function U8StreamReadAll(stream: ReadableStream<Uint8Array>) {
   const reader = stream.getReader();
