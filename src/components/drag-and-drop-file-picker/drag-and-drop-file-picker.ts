@@ -2,10 +2,10 @@ import { Sleep } from '../../lib/ericchase/Algorithm/Sleep.js';
 import { JobQueue } from '../../lib/ericchase/Utility/JobQueue.js';
 import { RecursiveIterator } from '../../lib/ericchase/Utility/RecursiveAsyncIterator.js';
 import type { SyncAsyncIterable } from '../../lib/ericchase/Utility/Types.js';
-import { DataTransferItemIterator } from '../../lib/ericchase/Web API/DataTransfer.js';
-import { GetWebkitRelativePath } from '../../lib/ericchase/Web API/File.js';
+import { DataTransferItemIterator } from '../../lib/ericchase/Web API/DataTransferItem_Utility.js';
+import { Compat_File } from '../../lib/ericchase/Web API/File.js';
 import { FileSystemDirectoryEntryIterator, FileSystemEntryIterator } from '../../lib/ericchase/Web API/FileSystem_Utility.js';
-import { GetWebkitEntries, SupportsWebkitDirectory } from '../../lib/ericchase/Web API/HTMLInputElement.js';
+import { Compat_HTMLInputElement, IsWebkitDirectorySupported } from '../../lib/ericchase/Web API/HTMLInputElement.js';
 
 export function setupDragAndDropFilePicker(
   container: Element,
@@ -32,7 +32,7 @@ export function setupDragAndDropFilePicker(
   if (options?.accept) {
     element.setAttribute('accept', options.accept);
   }
-  if (options?.directory === true && SupportsWebkitDirectory()) {
+  if (options?.directory === true && IsWebkitDirectorySupported()) {
     element.toggleAttribute('webkitdirectory', true);
   }
   if (options?.multiple === true) {
@@ -114,17 +114,21 @@ export function setupDragAndDropFilePicker(
     if (done === false) {
       for await (const fSFileEntry of fSEntryIterator.iterate(entries)) {
         const file = await new Promise<File>((resolve, reject) => fSFileEntry.file(resolve, reject));
+        const reader = new FileReader();
+        reader.readAsText(file);
         await fn.onUploadNextFile(file, () => (done = true));
         // @ts-ignore
         if (done === true) return;
       }
       for (const file of files) {
-        const path = GetWebkitRelativePath(file) + file.name;
+        const path = Compat_File(file).webkitRelativePath + file.name;
         if (!fSEntrySet.has(path)) {
           fSEntrySet.add(path);
-          await fn.onUploadNextFile(file, () => (done = true));
-          // @ts-ignore
-          if (done === true) return;
+          if (file.size > 0) {
+            await fn.onUploadNextFile(file, () => (done = true));
+            // @ts-ignore
+            if (done === true) return;
+          }
         }
       }
     }
@@ -133,7 +137,7 @@ export function setupDragAndDropFilePicker(
     jobQueue.add(async () => {
       await uploadStart();
       if (done === false && element instanceof HTMLInputElement && element.files) {
-        await iterateFSEntries(GetWebkitEntries(element) ?? [], element.files);
+        await iterateFSEntries(Compat_HTMLInputElement(element).webkitEntries ?? [], element.files);
       }
     }, 'changeHandler');
   };

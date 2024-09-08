@@ -69,7 +69,11 @@ export async function FilterDirectoryListing(
 ) {
   const directories: string[] = [];
   const files: string[] = [];
-  for (const entry of (await LSD({ path: options.path })).stdout?.split('\n') ?? []) {
+  let stdout = (await LSD({ path: options.path })).stdout;
+  if (typeof stdout !== 'string') {
+    stdout = new TextDecoder().decode(stdout);
+  }
+  for (const entry of stdout.split('\n') ?? []) {
     if (entry.length > 0) {
       const entry_name = entry.slice(2);
       if (entry[0] === 'D') {
@@ -94,7 +98,11 @@ export async function FilterDirectoryTree(
   const directories: string[] = [options.path];
   const files: string[] = [];
   for (let i = 0; i < directories.length; i++) {
-    for (const entry of (await LSD({ path: directories[i] })).stdout?.split('\n') ?? []) {
+    let stdout = (await LSD({ path: directories[i] })).stdout;
+    if (typeof stdout !== 'string') {
+      stdout = new TextDecoder().decode(stdout);
+    }
+    for (const entry of stdout.split('\n') ?? []) {
       if (entry.length > 0) {
         const entry_name = entry.slice(2);
         const entry_path = directories[i] + '/' + entry_name;

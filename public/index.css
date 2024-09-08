@@ -60,7 +60,7 @@
   }
 }
 
-#edit-buttons {
+#edit-button-container {
   & {
     display: flex;
     flex-flow: row wrap;
@@ -69,6 +69,7 @@
     justify-content: space-between;
   }
   & > button {
+    background-color: white;
     border-radius: 0.5em;
     border: 0.25em solid black;
     cursor: pointer;
@@ -78,7 +79,7 @@
       background-color: #add8e6;
     }
     &:disabled {
-      background-color: unset;
+      background-color: white;
       border: 0.25em solid lightgray;
       cursor: unset;
     }

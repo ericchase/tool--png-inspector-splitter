@@ -1,9 +1,17 @@
-// Webkit Guards
+import { HasProperty } from '../Utility/Guard.js';
+import { IsDeviceMobile } from './Device.js';
 
-export function GetWebkitEntries(element: HTMLInputElement): readonly FileSystemEntry[] | undefined {
-  return element.webkitEntries ?? undefined;
+export function Compat_HTMLInputElement(input?: HTMLInputElement) {
+  return {
+    get webkitEntries(): HTMLInputElement['webkitEntries'] | undefined {
+      return HasProperty(input, 'webkitEntries') ? input.webkitEntries : undefined;
+    },
+    get webkitdirectory(): HTMLInputElement['webkitdirectory'] | undefined {
+      return HasProperty(input, 'webkitdirectory') ? input.webkitdirectory : undefined;
+    },
+  };
 }
 
-export function SupportsWebkitDirectory(): boolean {
-  return /android|iphone|mobile/i.test(window.navigator.userAgent) === true ? false : true;
+export function IsWebkitDirectorySupported(): boolean {
+  return IsDeviceMobile() ? false : true;
 }

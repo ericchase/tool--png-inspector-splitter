@@ -24,7 +24,7 @@ export function U8Copy(bytes: Uint8Array, count: number, offset = 0): Uint8Array
   return bytes.slice(offset, offset + count);
 }
 
-export function U8FromString(from: string) {
+export function U8FromString(from: string): Uint8Array {
   return new TextEncoder().encode(from);
 }
 

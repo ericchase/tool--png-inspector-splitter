@@ -1,16 +1,15 @@
-import { U8StreamReadAll } from '../Algorithm/Stream/ReadAll.js';
+import { HasProperty } from '../Utility/Guard.js';
 
-export function GetWebkitRelativePath(file: File): string | undefined {
-  if (typeof file.webkitRelativePath !== 'undefined') {
-    return file.webkitRelativePath;
-  }
-}
-
-export function GetBytes(file?: File) {
-  if (file) {
-    if (typeof file.bytes !== 'undefined') {
-      return file.bytes();
-    }
-    return U8StreamReadAll(file.stream());
-  }
+export function Compat_File(file?: File) {
+  return {
+    get lastModified(): File['lastModified'] | undefined {
+      return HasProperty(file, 'lastModified') ? file.lastModified : undefined;
+    },
+    get name(): File['name'] | undefined {
+      return HasProperty(file, 'name') ? file.name : undefined;
+    },
+    get webkitRelativePath(): File['webkitRelativePath'] | undefined {
+      return HasProperty(file, 'webkitRelativePath') ? file.webkitRelativePath : undefined;
+    },
+  };
 }

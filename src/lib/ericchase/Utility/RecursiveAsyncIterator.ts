@@ -5,10 +5,10 @@ export class RecursiveIterator<In, Out> {
   async *iterate(init: SyncAsyncIterable<In>): SyncAsyncIterable<Out> {
     const list: SyncAsyncIterable<In>[] = [init];
     for (let i = 0; i < list.length; i++) {
-      for await (const fSEntry of this.fn(list[i], (value) => {
+      for await (const item of this.fn(list[i], (value) => {
         list.push(value);
       })) {
-        yield fSEntry;
+        yield item;
       }
     }
   }

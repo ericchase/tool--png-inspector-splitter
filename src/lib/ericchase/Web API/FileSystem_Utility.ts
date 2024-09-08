@@ -1,3 +1,6 @@
+import { Compat_FileSystemDirectoryEntry } from './FileSystemDirectoryEntry.js';
+import { Compat_FileSystemEntry } from './FileSystemEntry.js';
+
 export class FileSystemEntryIterator {
   list: FileSystemEntry[] = [];
   constructor(entries?: FileSystemEntry | FileSystemEntry[] | null) {
@@ -11,16 +14,14 @@ export class FileSystemEntryIterator {
   }
   *getDirectoryEntry(): Generator<FileSystemDirectoryEntry> {
     for (const entry of this.list) {
-      if (entry.isDirectory && entry instanceof FileSystemDirectoryEntry) {
-        yield entry;
+      if (Compat_FileSystemEntry(entry).isDirectory) {
+        yield entry as FileSystemDirectoryEntry;
       }
     }
   }
   *getFileEntry(): Generator<FileSystemFileEntry> {
     for (const entry of this.list) {
-      if (typeof FileSystemFileEntry !== 'undefined' && entry.isFile && entry instanceof FileSystemFileEntry) {
-        yield entry;
-      } else {
+      if (Compat_FileSystemEntry(entry).isFile) {
         yield entry as FileSystemFileEntry;
       }
     }
@@ -30,17 +31,21 @@ export class FileSystemEntryIterator {
 export class FileSystemDirectoryEntryIterator {
   list: FileSystemDirectoryEntry[] = [];
   constructor(entries?: FileSystemDirectoryEntry | FileSystemDirectoryEntry[] | null) {
-    if (entries instanceof FileSystemDirectoryEntry) {
-      this.list = [entries];
-    } else if (Array.isArray(entries)) {
-      this.list = entries;
+    if (entries) {
+      if (Array.isArray(entries)) {
+        this.list = entries;
+      } else {
+        this.list = [entries];
+      }
     }
   }
   async *getEntry(): AsyncGenerator<FileSystemEntry> {
     for (const entry of this.list) {
-      const reader = entry.createReader();
-      for (const entry of await new Promise<FileSystemEntry[]>((resolve, reject) => reader.readEntries(resolve, reject))) {
-        yield entry;
+      const reader = Compat_FileSystemDirectoryEntry(entry).createReader();
+      if (reader) {
+        for (const entry of await new Promise<FileSystemEntry[]>((resolve, reject) => reader.readEntries(resolve, reject))) {
+          yield entry;
+        }
       }
     }
   }

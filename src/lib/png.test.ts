@@ -3,8 +3,8 @@ import { Uint32ToHex } from './ericchase/Algorithm/Array/Uint32Array.js';
 import { U8, U8Concat, U8Take, U8ToASCII, U8ToHex } from './ericchase/Algorithm/Array/Uint8Array.js';
 import { analyzeChunk, Chunk, compressImageData, createIDATchunk, createIHDRchunk, decompressImageData, extractChunk, extractChunks, getChunkCRC, getScanlineSize, parseIHDRChunk } from './png.js';
 
-const good_normal_one_black_pixel = await Bun.file(__dirname + '/good_normal_one_black_pixel.png').bytes();
-const tall_1kx3k_red_green_blue = await Bun.file(__dirname + '/tall_1kx3k_red_green_blue.png').bytes();
+const good_normal_one_black_pixel = await Bun.file('./example-images/good_normal_one_black_pixel.png').bytes();
+const tall_1kx3k_red_green_blue = await Bun.file('./example-images/tall_1kx3k_red_green_blue.png').bytes();
 
 describe('good_normal_one_black_pixel.png', () => {
   const [signature, chunk_bytes] = U8Take(good_normal_one_black_pixel, 8);
